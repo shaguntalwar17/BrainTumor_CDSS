@@ -1,6 +1,4 @@
-﻿# Root dependency umbrella for quick local setup.
-# For full reproducibility use backend/requirements.txt and ml/requirements.txt.
-fastapi==0.115.6
+﻿fastapi==0.115.6
 uvicorn[standard]==0.32.1
 sqlalchemy==2.0.36
 pydantic==2.10.3
@@ -13,7 +11,6 @@ reportlab==4.2.5
 matplotlib==3.9.3
 scikit-learn==1.5.2
 pandas==2.2.3
-pyyaml==6.0.2
 torch==2.11.0
 torchvision==0.26.0
 monai==1.5.2

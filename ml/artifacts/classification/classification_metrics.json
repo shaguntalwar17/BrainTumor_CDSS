@@ -1,0 +1,14 @@
+{
+  "model_name": "ResNeXt101_32x8d",
+  "task_type": "classification",
+  "accuracy": 0.49230769230769234,
+  "precision": 0.463347072776907,
+  "recall": 0.48914306724864676,
+  "f1_score": 0.43586737600410524,
+  "auc": 0.6967406955596067,
+  "inference_time": 0.19043889991007745,
+  "training_time": null,
+  "model_size": 339.91067123413086,
+  "best_use_case": "Mentor-recommended backbone tuned for balanced macro-F1/recall in this dataset run.",
+  "note": "Interim evaluated metrics from live best checkpoint snapshot (training still running)."
+}

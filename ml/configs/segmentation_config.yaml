@@ -1,0 +1,23 @@
+﻿seed: 42
+data:
+  images_dir: data/processed/train
+  masks_dir: data/masks/train
+  val_images_dir: data/processed/test
+  val_masks_dir: data/masks/test
+  allow_pseudo_masks_if_missing: true
+  image_size: 224
+  batch_size: 8
+  num_workers: 4
+training:
+  model_name: unet
+  epochs: 20
+  lr: 0.0003
+  weight_decay: 0.00001
+  loss: dice_bce
+  early_stopping_patience: 8
+  use_amp: true
+  scheduler: reduce_on_plateau
+artifacts:
+  output_dir: ml/artifacts/segmentation
+  best_model_name: best_segmentation.pt
+  metrics_json: segmentation_metrics.json

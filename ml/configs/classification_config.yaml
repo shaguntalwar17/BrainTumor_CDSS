@@ -1,0 +1,24 @@
+﻿seed: 42
+data:
+  train_dir: data/processed/train
+  val_dir: data/processed/test
+  image_size: 224
+  batch_size: 2
+  num_workers: 0
+  class_names: [Glioma, Meningioma, Pituitary, No_Tumor]
+training:
+  model_name: resnext101_32x8d
+  epochs_head: 5
+  epochs_finetune: 10
+  lr_head: 0.001
+  lr_finetune: 0.0001
+  weight_decay: 0.0001
+  dropout: 0.35
+  label_smoothing: 0.02
+  early_stopping_patience: 6
+  use_amp: true
+  scheduler: cosine
+artifacts:
+  output_dir: ml/artifacts/classification
+  best_model_name: best_classification.pt
+  metrics_json: classification_metrics.json

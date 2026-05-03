@@ -1,0 +1,10 @@
+﻿project_name: Brain MRI Tumor AI Platform
+disclaimer: AI-assisted output for educational/research use only. Verify with certified radiologist/doctor.
+stage_note: Tumor stage is not predicted because dataset lacks medically validated stage labels.
+supported_formats:
+  - .jpg
+  - .jpeg
+  - .png
+  - .nii
+  - .nii.gz
+  - .dcm
