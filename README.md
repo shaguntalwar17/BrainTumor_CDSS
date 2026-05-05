@@ -8,7 +8,7 @@ An advanced academic/research prototype for AI-assisted Brain MRI tumor detectio
 This system is an **AI-assisted academic prototype for Brain MRI tumor analysis** and **not** a certified medical diagnostic tool.
 
 - All predictions, segmentations, heatmaps, and reports must be verified by a qualified radiologist or medical professional.
-- Tumor stage prediction is not provided because the dataset does not include clinically validated staging labels.
+- Stage output is research-only. If a validated stage model is unavailable, proxy burden-based stage estimation is used with clear limitations.
 - 2D MRI analysis uses area-based approximation, not true clinical volumetric diagnosis.
 
 ## 1. Problem Statement
@@ -30,23 +30,30 @@ Brain tumor analysis is often fragmented across tools. This project provides a s
 ## 3. Features
 - Detection: Tumor present/absent
 - Segmentation: Binary mask, overlay, boundary, area estimation
+- 3D-ready visualization: volumetric slice stack export with interactive slice-scrolling UI
 - Classification: Multi-class tumor type prediction
-- Explainability: Grad-CAM with consistency score vs segmentation
+- Explainability: HiResCAM/LayerCAM-style map with consistency score vs segmentation
+- Uncertainty: Monte Carlo dropout uncertainty score + low-confidence alerts
 - Longitudinal: Change tracking across scans with progression status
+- Growth map: previous-vs-current segmentation increase/reduction visualization
+- Auto patient workflow: optional manual ID + automatic patient ID generation + similarity-based patient matching
 - Risk category: Low/Medium/High based on transparent logic
 - LTI novelty: Longitudinal Tumor Progression Index (0-100)
 - RAG novelty: Grounded patient-history retrieval from stored summaries
+- Human-in-the-loop: corrected mask upload API for active-learning workflow
 - PDF report: Structured, hospital-style report with disclaimer
 - Model leaderboard: Classification + segmentation metrics view
 
 ## 4. Architecture
 ```text
-[Frontend: Next.js + Tailwind + Framer Motion]
+[Flask UI Layer (Jinja + Bootstrap + Custom CSS/JS)]
                 |
                 v
-[FastAPI Backend]
+[FastAPI Backend APIs]
   |-- Preprocessing Verification
   |-- Detection / Segmentation / Classification / Grad-CAM
+  |-- Stage Estimation (model-driven or proxy with disclosure)
+  |-- Calibration + Uncertainty + Pituitary FP Guard
   |-- Risk + Longitudinal Comparison Engine
   |-- Report Generator (PDF)
   |-- RAG Query Service
@@ -61,13 +68,15 @@ Brain tumor analysis is often fragmented across tools. This project provides a s
 ## 5. Model Pipeline
 1. Image loading (JPG/PNG + optional NIfTI/DICOM)
 2. Resize, normalize, denoise, skull-strip support
-3. Detection and classification
-4. Segmentation mask and area/volume estimate
-5. Grad-CAM heatmap and explainability consistency score
-6. Risk category + uncertainty warning
-7. Longitudinal comparison with previous scan
-8. RAG document creation and indexing
-9. PDF report generation
+3. Tumor detection gating (morphology + classifier confidence fusion)
+4. Tumor segmentation mask and area/volume estimate
+5. Tumor classification with ensemble/TTA/temperature + prior calibration
+6. Stage estimation (trained stage model if available, else transparent proxy)
+7. HiResCAM/LayerCAM heatmap and explainability consistency score
+8. Risk category + uncertainty warning
+9. Longitudinal comparison with previous scan
+10. RAG document creation and indexing
+11. PDF report generation
 
 ## 6. Dataset Details
 Current repository includes image folders under `data/raw` and `data/processed`.
@@ -88,9 +97,15 @@ Implemented in backend and ML scripts:
 - Skull-strip approximation (2D)
 - Resize to model input
 - Optional NIfTI and DICOM loaders
+- 3D voxel-spacing-aware volume estimation when NIfTI metadata is available
 
 Validation script:
 - `ml/preprocessing/verify_dataset.py`
+
+Example:
+```bash
+python ml/preprocessing/verify_dataset.py --root-dir data --expected-classes Glioma,Meningioma,Pituitary,No_Tumor --masks-root data/masks
+```
 
 Checks:
 - missing/zero-byte files
@@ -134,7 +149,21 @@ Comparison-ready model factory includes:
 - ResNet50
 - DenseNet121
 - EfficientNet-B3
+- EfficientNetV2-S
 - ConvNeXt-Tiny
+- ViT-B/16
+- ResNet18 (used as lightweight stage-model backbone option)
+
+## 9A. Stage Estimation Training (Research)
+Scripts:
+- `ml/train_stage.py`
+- `ml/evaluate_stage.py`
+
+Config:
+- `ml/configs/stage_config.yaml`
+
+Dataset guide:
+- `docs/STAGE_DATASET_GUIDE.md`
 
 ## 10. Evaluation Metrics
 Classification script: `ml/evaluate_classification.py`
@@ -162,9 +191,8 @@ API and script compare previous/current scans and compute:
   - Tumor no longer detected
   - Significantly increased
   - Slightly increased
-  - Decreased
+  - Improved
   - Stable
-  - No Tumor
 - confidence difference
 - tumor type change
 - longitudinal tumor progression index
@@ -180,6 +208,7 @@ API and script compare previous/current scans and compute:
 RAG query API: `POST /rag-query`
 - grounded strictly on stored patient records
 - includes citations (`scan_id`, `scan_date`)
+- does not use external clinical text for patient-history answers
 
 ## 13. Professional Report Generation
 - Report generator: `backend/services/report_service.py`
@@ -220,12 +249,16 @@ Core docs:
 
 ## 15. API Endpoints
 - `POST /api/scans/upload` (primary) and `POST /upload-scan` (compatibility)
+  - `patient_id` is optional; backend can auto-generate and match patients by profile similarity.
 - `GET /api/patients`
 - `GET /api/patients/{patient_id}`
 - `GET /api/patients/{patient_id}/scans`
 - `GET /api/scans/{scan_id}`
 - `POST /api/scans/compare` (primary) and `POST /compare-scans` (compatibility)
+- `POST /api/scans/{scan_id}/correct-mask` (human correction loop)
 - `GET /api/reports/{scan_id}` (primary) and `GET /report/{scan_id}` (compatibility)
+- `GET /api/reports` report index (supports optional `patient_id` filter)
+- `GET /api/reports/comparison/{patient_id}/{previous_scan_id}/{current_scan_id}` for comparison PDF generation/download
 - `GET /api/models/metrics` (primary) and `GET /model-metrics` (compatibility)
 - `POST /api/rag/query` (primary) and `POST /rag-query` (compatibility)
 - `GET /api/dashboard/summary`
@@ -235,10 +268,10 @@ Detailed API guide: `docs/api_documentation.md`
 ## 16. Setup Instructions
 ### Prerequisites
 - Python 3.10+
-- Node 18+
+- (Optional) Node 18+ (only if using legacy Next.js frontend)
 - (Optional) CUDA GPU
 
-### Backend setup
+### Backend API setup
 ```bash
 python -m venv .venv
 .venv\Scripts\activate
@@ -251,16 +284,22 @@ Optional config:
 copy .env.example .env
 ```
 
-### Frontend setup
+### Flask UI setup (recommended)
+```bash
+pip install -r requirements.txt
+python app.py
+```
+
+Default URLs:
+- Backend: `http://127.0.0.1:8000`
+- UI: `http://127.0.0.1:3000`
+
+### Next.js frontend setup (legacy/optional)
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-
-Default URLs:
-- Backend: `http://127.0.0.1:8000`
-- Frontend: `http://localhost:3000`
 
 ### Docker (optional)
 ```bash
@@ -298,11 +337,13 @@ python ml/evaluate_segmentation.py
   - Uses baseline/demo inference behavior without trained checkpoints.
   - Outputs are clearly marked as non-clinical prototype results.
 - `MODEL_RUNTIME_MODE=trained`
-  - Requires valid checkpoint paths:
-    - `CLASSIFICATION_MODEL_PATH`
-    - `SEGMENTATION_MODEL_PATH`
-  - Missing checkpoint behavior:
-    - `Trained model checkpoint not found. Please train the model or switch MODEL_RUNTIME_MODE=demo.`
+  - Requires valid classification checkpoint path:
+    - `CLASSIFICATION_MODEL_PATH` (or `CLASSIFICATION_ENSEMBLE_PATHS`)
+  - Segmentation/stage automatically use trained checkpoints when present and transparently fall back otherwise.
+  - Includes calibrated inference options:
+    - `CLASSIFICATION_TEMPERATURE`
+    - `CLASSIFICATION_PRIOR_WEIGHTS`
+    - pituitary false-positive guard thresholds (see `.env.example`)
 
 ## 20. Generate Explainability and Reports
 ```bash

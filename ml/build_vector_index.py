@@ -54,6 +54,7 @@ def main(output_dir: str | None = None):
             "id": row.id,
             "patient_db_id": row.patient_db_id,
             "scan_id": row.scan_id,
+            "document_type": row.document_type,
             "document_text": row.document_text,
             "embedding_id": row.embedding_id,
         }

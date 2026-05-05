@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from backend.api.deps import get_db
 from backend.models.entities import Comparison, Patient, Scan
 from backend.schemas.scan import CompareScansRequest, CompareScansResponse
-from backend.services.comparison_service import build_growth_chart, compare_scans
+from backend.services.comparison_service import build_growth_change_map, build_growth_chart, compare_scans
 from backend.utils.assets import to_storage_url
 
 
@@ -18,9 +18,11 @@ def _scan_assets(scan: Scan) -> dict[str, str | None]:
     return {
         "image_url": to_storage_url(scan.image_path),
         "mask_url": to_storage_url(scan.mask_path),
+        "corrected_mask_url": to_storage_url(scan.corrected_mask_path),
         "gradcam_url": to_storage_url(scan.gradcam_path),
         "overlay_url": to_storage_url(scan.overlay_path),
         "report_url": f"/api/reports/{scan.id}" if scan.report_path else None,
+        "volume_manifest_url": to_storage_url(scan.volume_manifest_path),
     }
 
 
@@ -66,6 +68,13 @@ def compare_scans_route(payload: CompareScansRequest, db: Session = Depends(get_
 
     all_scans = db.scalars(select(Scan).where(Scan.patient_db_id == patient.id)).all()
     chart_path = build_growth_chart(patient_id=patient.patient_id, scans=all_scans)
+    growth_map_path = build_growth_change_map(
+        patient_id=patient.patient_id,
+        previous_scan_id=previous.id,
+        current_scan_id=current.id,
+        previous_mask_path=previous.mask_path,
+        current_mask_path=current.mask_path,
+    )
 
     return CompareScansResponse(
         patient_id=payload.patient_id,
@@ -81,6 +90,9 @@ def compare_scans_route(payload: CompareScansRequest, db: Session = Depends(get_
         percentage_change=result.percentage_change,
         tumor_type_change=result.tumor_type_change,
         confidence_difference=result.confidence_difference,
+        previous_stage_label=result.previous_stage_label,
+        current_stage_label=result.current_stage_label,
+        stage_change=result.stage_change,
         previous_risk_level=result.previous_risk_level,
         current_risk_level=result.current_risk_level,
         risk_level_change=result.risk_level_change,
@@ -90,4 +102,5 @@ def compare_scans_route(payload: CompareScansRequest, db: Session = Depends(get_
         previous_scan_assets=_scan_assets(previous),
         current_scan_assets=_scan_assets(current),
         progression_chart_url=to_storage_url(chart_path),
+        growth_map_url=to_storage_url(growth_map_path),
     )

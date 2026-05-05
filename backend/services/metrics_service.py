@@ -47,12 +47,17 @@ def seed_sample_metrics_if_empty(db: Session) -> None:
             "best_use_case": "Balanced speed/accuracy. " + SAMPLE_METRICS_NOTE,
         },
         {
+            "model_name": "EfficientNetV2-S",
+            "task_type": "classification",
+            "best_use_case": "Modern efficient CNN for faster convergence. " + SAMPLE_METRICS_NOTE,
+        },
+        {
             "model_name": "ConvNeXt-Tiny",
             "task_type": "classification",
             "best_use_case": "Modern CNN benchmark. " + SAMPLE_METRICS_NOTE,
         },
         {
-            "model_name": "VisionTransformer",
+            "model_name": "ViT-B/16",
             "task_type": "classification",
             "best_use_case": "Transformer comparison. " + SAMPLE_METRICS_NOTE,
         },
@@ -138,10 +143,41 @@ def upsert_metric_row(db: Session, row: dict) -> None:
             ModelMetric.task_type == task_type,
         )
     )
+
+    def _metric_score(payload: dict, kind: str) -> float:
+        if kind == "classification":
+            f1 = payload.get("f1_score")
+            auc = payload.get("auc")
+            acc = payload.get("accuracy")
+            values = [float(v) for v in [f1, auc, acc] if v is not None]
+            return values[0] if values else -1.0
+        dice = payload.get("dice")
+        iou = payload.get("iou")
+        values = [float(v) for v in [dice, iou] if v is not None]
+        return values[0] if values else -1.0
+
     if existing:
-        for key, val in row.items():
-            if hasattr(existing, key):
-                setattr(existing, key, val)
+        existing_payload = {
+            "accuracy": existing.accuracy,
+            "f1_score": existing.f1_score,
+            "auc": existing.auc,
+            "dice": existing.dice,
+            "iou": existing.iou,
+        }
+        existing_score = _metric_score(existing_payload, task_type)
+        incoming_score = _metric_score(row, task_type)
+
+        if incoming_score >= existing_score:
+            for key, val in row.items():
+                if hasattr(existing, key):
+                    setattr(existing, key, val)
+        else:
+            # Preserve better current metrics; fill only missing fields from incoming payload.
+            for key, val in row.items():
+                if not hasattr(existing, key):
+                    continue
+                if getattr(existing, key) is None and val is not None:
+                    setattr(existing, key, val)
     else:
         db.add(ModelMetric(**row))
     db.commit()

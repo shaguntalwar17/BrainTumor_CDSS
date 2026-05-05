@@ -11,12 +11,19 @@ from backend.models.entities import Comparison, Patient, Scan, ScanProbability
 from backend.schemas.scan import ClassProbability, UploadScanResponse
 from backend.services.comparison_service import build_growth_chart, compare_scans
 from backend.services.inference_service import ModelRuntimeError, analyze_scan
+from backend.services.patient_service import resolve_or_create_patient
 from backend.services.preprocessing_service import preprocess_scan
 from backend.services.rag_service import add_rag_document
 from backend.services.report_service import generate_report
 from backend.services.risk_service import compute_risk_category, confidence_warning
-from backend.services.storage_service import save_gradcam, save_mask, save_overlay, save_upload_file
-from backend.utils.assets import to_storage_url
+from backend.services.storage_service import (
+    save_gradcam,
+    save_mask,
+    save_overlay,
+    save_upload_file,
+    save_volume_slice_stack,
+)
+from backend.utils.assets import to_storage_url, volume_manifest_to_urls
 from backend.utils.disclaimer import ATTRIBUTION, STAGE_NOTE, UI_DISCLAIMER
 
 
@@ -26,7 +33,7 @@ router = APIRouter(tags=["scan"])
 @router.post("/upload-scan", response_model=UploadScanResponse)
 @router.post("/api/scans/upload", response_model=UploadScanResponse)
 async def upload_scan(
-    patient_id: str = Form(...),
+    patient_id: str | None = Form(None),
     patient_name: str = Form(...),
     age: int = Form(...),
     gender: str = Form(...),
@@ -41,29 +48,21 @@ async def upload_scan(
     except ValueError as exc:
         raise HTTPException(status_code=400, detail="scan_date must be in YYYY-MM-DD format.") from exc
 
-    patient = db.scalar(select(Patient).where(Patient.patient_id == patient_id))
-    if not patient:
-        patient = Patient(
-            patient_id=patient_id,
-            patient_code=patient_id,
-            name=patient_name,
-            age=age,
-            gender=gender,
-            contact=contact,
-        )
-        db.add(patient)
-        db.commit()
-        db.refresh(patient)
-    else:
-        patient.name = patient_name
-        patient.age = age
-        patient.gender = gender
-        patient.contact = contact
-        if not patient.patient_code:
-            patient.patient_code = patient.patient_id
-        db.commit()
+    resolution = resolve_or_create_patient(
+        db=db,
+        provided_patient_id=patient_id,
+        patient_name=patient_name,
+        age=age,
+        gender=gender,
+        contact=contact,
+    )
+    patient = resolution.patient
 
-    upload_path = await save_upload_file(file, patient_id=patient_id, scan_date=parsed_scan_date)
+    try:
+        upload_path = await save_upload_file(file, patient_id=patient.patient_id, scan_date=parsed_scan_date)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
     try:
         preprocessed = preprocess_scan(upload_path)
     except Exception as exc:
@@ -87,10 +86,16 @@ async def upload_scan(
         tumor_detected=analysis.tumor_detected,
         tumor_type=analysis.tumor_type,
         confidence_score=analysis.confidence,
+        uncertainty_score=analysis.uncertainty_score,
+        uncertainty_std=analysis.uncertainty_std,
         tumor_area=analysis.tumor_area,
         tumor_volume=analysis.tumor_volume,
+        stage_label=analysis.stage_label,
+        stage_confidence=analysis.stage_confidence,
+        stage_method=analysis.stage_method,
         risk_category=risk_category,
         explainability_consistency_score=analysis.explainability_consistency_score,
+        xai_method=analysis.xai_method,
         model_version=analysis.model_version,
         radiologist_notes=doctor_notes,
     )
@@ -105,6 +110,14 @@ async def upload_scan(
     scan.mask_path = mask_path
     scan.gradcam_path = gradcam_path
     scan.overlay_path = overlay_path
+
+    if preprocessed.volume_data is not None and preprocessed.volume_data.ndim == 3:
+        manifest_path, _, _ = save_volume_slice_stack(
+            preprocessed.volume_data,
+            scan_id=scan.id,
+            selected_slice_index=preprocessed.selected_slice_index,
+        )
+        scan.volume_manifest_path = manifest_path
 
     for class_name, prob in analysis.class_probabilities.items():
         db.add(ScanProbability(scan_id=scan.id, class_name=class_name, probability=float(prob)))
@@ -156,7 +169,9 @@ async def upload_scan(
     rag_text = (
         f"Scan date: {scan.scan_date}. Tumor detected: {scan.tumor_detected}. "
         f"Tumor type: {scan.tumor_type}. Tumor area: {scan.tumor_area:.2f}. "
-        f"Tumor volume: {scan.tumor_volume}. Confidence: {scan.confidence_score:.3f}. "
+        f"Tumor volume: {scan.tumor_volume}. Stage: {scan.stage_label}. "
+        f"Stage method: {scan.stage_method}. Confidence: {scan.confidence_score:.3f}. "
+        f"Uncertainty score: {analysis.uncertainty_score}. "
         f"Risk: {scan.risk_category}. Progression: {progression_status}."
     )
     add_rag_document(db, patient_db_id=patient.id, scan_id=scan.id, document_text=rag_text)
@@ -165,22 +180,35 @@ async def upload_scan(
         ClassProbability(class_name=name, probability=float(prob))
         for name, prob in sorted(analysis.class_probabilities.items(), key=lambda item: item[1], reverse=True)
     ]
+    volume_slice_urls, selected_slice_index = volume_manifest_to_urls(scan.volume_manifest_path)
 
     return UploadScanResponse(
         patient_id=patient.patient_id,
         patient_name=patient.name,
+        generated_patient_id=resolution.generated_new_id,
+        matched_existing_patient=resolution.matched_existing,
+        patient_match_strategy=resolution.match_strategy,
+        patient_match_score=resolution.match_score,
         scan_id=scan.id,
         scan_date=scan.scan_date,
         tumor_detected=scan.tumor_detected,
         tumor_type=scan.tumor_type,
         confidence_score=scan.confidence_score,
+        uncertainty_score=scan.uncertainty_score,
+        uncertainty_std=scan.uncertainty_std,
         tumor_area=scan.tumor_area,
         tumor_volume=scan.tumor_volume,
+        stage_label=scan.stage_label,
+        stage_confidence=scan.stage_confidence,
+        stage_method=scan.stage_method,
+        volume_units=analysis.volume_units,
+        is_area_based_approximation=analysis.is_area_based_approximation,
         risk_category=scan.risk_category,
         uncertainty_warning=uncertainty,
         progression_status=progression_status,
         explainability_consistency_score=scan.explainability_consistency_score,
         explainability_warning=analysis.explainability_warning,
+        xai_method=analysis.xai_method,
         longitudinal_tumor_progression_index=lti,
         model_version=scan.model_version,
         runtime_mode=analysis.runtime_mode,
@@ -195,6 +223,9 @@ async def upload_scan(
         gradcam_url=to_storage_url(gradcam_path),
         mask_url=to_storage_url(mask_path),
         overlay_url=to_storage_url(overlay_path),
+        volume_manifest_url=to_storage_url(scan.volume_manifest_path),
+        volume_slice_urls=volume_slice_urls,
+        selected_slice_index=selected_slice_index,
         disclaimer=UI_DISCLAIMER,
         stage_note=STAGE_NOTE,
         attribution=ATTRIBUTION,

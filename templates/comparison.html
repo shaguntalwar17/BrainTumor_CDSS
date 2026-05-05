@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="glass-card">
+  <div class="section-head">
+    <h2>Compare Reports</h2>
+    <p>Compare two scans for the same patient and review progression metrics.</p>
+  </div>
+
+  <div class="row g-3 align-items-end">
+    <div class="col-lg-4">
+      <label class="form-label" for="comparePatientSelect">Patient</label>
+      <select id="comparePatientSelect" class="form-select form-select-lg">
+        <option value="">Loading...</option>
+      </select>
+    </div>
+    <div class="col-lg-3">
+      <label class="form-label" for="previousScanSelect">Previous Scan</label>
+      <select id="previousScanSelect" class="form-select form-select-lg">
+        <option value="">Select patient first</option>
+      </select>
+    </div>
+    <div class="col-lg-3">
+      <label class="form-label" for="currentScanSelect">Current Scan</label>
+      <select id="currentScanSelect" class="form-select form-select-lg">
+        <option value="">Select patient first</option>
+      </select>
+    </div>
+    <div class="col-lg-2 d-grid">
+      <button id="compareBtn" class="btn btn-cyan btn-lg">Compare</button>
+    </div>
+  </div>
+</section>
+
+<section class="row g-4 mt-1" id="comparisonSection" hidden>
+  <div class="col-12">
+    <article class="glass-card">
+      <div id="comparisonMetrics" class="result-meta-grid"></div>
+      <div id="comparisonAssets" class="row g-3 mt-2"></div>
+      <div class="mt-3 d-flex flex-wrap gap-2">
+        <a id="comparisonPdfLink" class="btn btn-outline-light" target="_blank" rel="noopener">Download Comparison PDF</a>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="mt-3" id="comparisonMessage" hidden>
+  <div class="alert alert-warning"></div>
+</section>
+{% endblock %}

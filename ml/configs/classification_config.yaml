@@ -14,8 +14,13 @@ training:
   lr_finetune: 0.0001
   weight_decay: 0.0001
   dropout: 0.35
+  loss: focal
+  focal_gamma: 2.0
+  sampler_power: 0.75
   label_smoothing: 0.02
   early_stopping_patience: 6
+  gradient_clip_norm: 1.0
+  skip_nan_batches: true
   use_amp: true
   scheduler: cosine
 artifacts:

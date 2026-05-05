@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="row g-4">
+  <div class="col-xl-7">
+    <article class="glass-card h-100">
+      <div class="section-head">
+        <h2>Upload MRI Image</h2>
+        <p>Enter patient details, upload scan, and launch full AI analysis workflow.</p>
+      </div>
+
+      <form id="uploadForm" class="row g-3" enctype="multipart/form-data" novalidate>
+        <div class="col-md-6">
+          <label class="form-label" for="patientName">Patient Name</label>
+          <input id="patientName" name="patient_name" class="form-control form-control-lg" required />
+        </div>
+        <div class="col-md-3">
+          <label class="form-label" for="age">Age</label>
+          <input id="age" name="age" type="number" class="form-control form-control-lg" required />
+        </div>
+        <div class="col-md-3">
+          <label class="form-label" for="gender">Gender</label>
+          <select id="gender" name="gender" class="form-select form-select-lg" required>
+            <option value="">Select</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="scanDate">Scan Date</label>
+          <input id="scanDate" name="scan_date" type="date" class="form-control form-control-lg" required />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="contact">Contact (Optional)</label>
+          <input id="contact" name="contact" class="form-control form-control-lg" />
+        </div>
+
+        <div class="col-12">
+          <label for="scanFile" id="uploadDropZone" class="upload-dropzone">
+            <input id="scanFile" type="file" name="file" accept=".png,.jpg,.jpeg,.nii,.nii.gz,.dcm" hidden required />
+            <i class="bi bi-cloud-upload"></i>
+            <p class="upload-title">Drag and drop MRI file here</p>
+            <p class="upload-copy">or click to browse PNG, JPG, NIfTI, or DICOM files</p>
+            <p id="selectedFileName" class="upload-file-name">No file selected</p>
+          </label>
+        </div>
+
+        <div class="col-12 d-flex flex-wrap gap-3 align-items-center">
+          <button id="analyzeBtn" type="submit" class="btn btn-cyan btn-lg px-4">Start Analysis</button>
+          <div id="uploadLoader" class="analysis-loader" hidden>
+            <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+            <span>Analyzing MRI scan. Please wait...</span>
+          </div>
+        </div>
+      </form>
+    </article>
+  </div>
+
+  <div class="col-xl-5">
+    <article class="glass-card h-100">
+      <div class="section-head">
+        <h3>Preview</h3>
+        <p>Uploaded scan preview appears here before analysis starts.</p>
+      </div>
+      <div class="preview-frame">
+        <img id="uploadPreview" alt="MRI preview" hidden />
+        <div id="previewPlaceholder" class="preview-placeholder">
+          <img src="{{ url_for('static', filename='images/mri-pattern.svg') }}" alt="MRI preview placeholder" />
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="row g-4 mt-1" id="uploadResultSection" hidden>
+  <div class="col-12">
+    <article class="glass-card">
+      <div class="section-head">
+        <h3>Analysis Results</h3>
+        <p>AI-assisted outputs with confidence, explainability, and download options.</p>
+      </div>
+
+      <div id="resultMeta" class="result-meta-grid"></div>
+
+      <div class="mt-3">
+        <label class="form-label mb-2">Model Confidence</label>
+        <div class="progress confidence-progress" role="progressbar" aria-label="Model confidence">
+          <div id="confidenceBar" class="progress-bar progress-bar-striped progress-bar-animated"></div>
+        </div>
+        <p id="confidenceText" class="tiny-note"></p>
+      </div>
+
+      <div class="mt-3">
+        <label class="form-label mb-2">Class Probability Distribution</label>
+        <div id="classProbabilityGrid" class="result-meta-grid"></div>
+      </div>
+
+      <div id="assetGallery" class="row g-3 mt-2"></div>
+    </article>
+  </div>
+</section>
+
+<section class="mt-3" id="uploadMessage" hidden>
+  <div class="alert alert-warning"></div>
+</section>
+{% endblock %}

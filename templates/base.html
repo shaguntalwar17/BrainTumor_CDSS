@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ page_title }} | {{ project_name }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  </head>
+  <body data-page="{{ current_page }}">
+    <div class="medical-bg" aria-hidden="true">
+      <span class="orb orb-a"></span>
+      <span class="orb orb-b"></span>
+      <span class="orb orb-c"></span>
+      <span class="grid-overlay"></span>
+    </div>
+
+    <div class="app-shell">
+      <aside id="sidebar" class="app-sidebar" aria-label="Primary navigation">
+        <div class="sidebar-header">
+          <p class="sidebar-kicker">Medical AI Suite</p>
+          <h1 class="sidebar-title">{{ project_name }}</h1>
+          <p class="sidebar-subtitle">AI-assisted MRI research prototype</p>
+        </div>
+
+        <nav class="sidebar-nav">
+          {% for item in nav_items %}
+          <a href="{{ item.href }}" class="nav-link {% if current_page == item.key %}active{% endif %}">
+            <i class="bi {{ item.icon }}" aria-hidden="true"></i>
+            <span>{{ item.label }}</span>
+          </a>
+          {% endfor %}
+        </nav>
+
+        <div class="sidebar-credit">{{ attribution }}</div>
+      </aside>
+
+      <div class="app-main">
+        <header class="app-topbar">
+          <button id="sidebarToggle" class="btn btn-sm btn-outline-light sidebar-toggle" type="button" aria-label="Toggle menu">
+            <i class="bi bi-list"></i>
+          </button>
+          <div class="topbar-text">
+            <p class="topbar-title">{{ page_title }}</p>
+            <p class="topbar-subtitle">Professional Brain MRI Analytics Interface</p>
+          </div>
+          <a href="/upload" class="btn btn-cyan btn-sm">Start Analysis</a>
+        </header>
+
+        <main class="page-content container-fluid">
+          {% block content %}{% endblock %}
+        </main>
+
+        <footer class="app-footer">
+          <div class="footer-left">
+            <p class="footer-title">Important Medical Disclaimer</p>
+            <p class="footer-copy">{{ medical_disclaimer }}</p>
+          </div>
+          <div class="footer-right">{{ attribution }}</div>
+        </footer>
+      </div>
+    </div>
+
+    <script>
+      window.APP_CONFIG = {
+        backendApiUrl: "{{ backend_api_url }}"
+      };
+    </script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    ></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+  </body>
+</html>

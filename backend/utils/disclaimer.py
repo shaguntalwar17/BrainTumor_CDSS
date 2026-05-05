@@ -11,7 +11,7 @@ REPORT_DISCLAIMER = (
 )
 
 STAGE_NOTE = (
-    "Tumor stage prediction is not provided because the dataset does not include clinically validated staging labels."
+    "Stage output is research-only. When a validated stage model is unavailable, proxy burden-based staging is shown with limitations."
 )
 
 ATTRIBUTION = "Project made by Shagun Talwar"

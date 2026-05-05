@@ -1,0 +1,29 @@
+seed: 42
+data:
+  train_dir: data/stage/train
+  val_dir: data/stage/val
+  image_size: 224
+  batch_size: 8
+  num_workers: 0
+  class_names: [Low-grade, High-grade]
+training:
+  model_name: resnet18
+  epochs_head: 4
+  epochs_finetune: 8
+  lr_head: 0.001
+  lr_finetune: 0.0001
+  weight_decay: 0.0001
+  dropout: 0.3
+  loss: focal
+  focal_gamma: 1.5
+  sampler_power: 0.5
+  label_smoothing: 0.01
+  early_stopping_patience: 6
+  gradient_clip_norm: 1.0
+  skip_nan_batches: true
+  use_amp: true
+  scheduler: cosine
+artifacts:
+  output_dir: ml/artifacts/stage
+  best_model_name: best_stage.pt
+  metrics_json: stage_metrics.json

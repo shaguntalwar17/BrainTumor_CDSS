@@ -29,3 +29,7 @@ ml/artifacts/classification/*
 ml/artifacts/segmentation/*
 ml/artifacts/dataset_validation_report.json
 *.log
+logs/
+ml/artifacts/classification_resnet50/
+ml/artifacts/classification_resnet50_balanced/
+ml/artifacts/**/*.pt

@@ -21,17 +21,20 @@ from sklearn.preprocessing import label_binarize
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 
-from ml.classification.train import build_model
+from ml.classification.train import build_model, canonical_model_name
 
 
 def _display_name(model_name: str) -> str:
-    key = model_name.lower()
+    key = canonical_model_name(model_name)
     mapping = {
         "resnext101_32x8d": "ResNeXt101_32x8d",
         "resnet50": "ResNet50",
+        "resnet18": "ResNet18",
         "densenet121": "DenseNet121",
         "efficientnet_b3": "EfficientNet-B3",
+        "efficientnet_v2_s": "EfficientNetV2-S",
         "convnext_tiny": "ConvNeXt-Tiny",
+        "vit_b_16": "ViT-B/16",
     }
     return mapping.get(key, model_name)
 

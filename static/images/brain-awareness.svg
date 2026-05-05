@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 520" role="img" aria-label="Brain awareness illustration">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a1c35" />
+      <stop offset="100%" stop-color="#143f6a" />
+    </linearGradient>
+    <linearGradient id="brain" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#96f0ff" />
+      <stop offset="100%" stop-color="#6e8dff" />
+    </linearGradient>
+  </defs>
+  <rect width="760" height="520" rx="28" fill="url(#bg)" />
+  <g transform="translate(120 70)" fill="none" stroke="url(#brain)" stroke-width="7" stroke-linecap="round" opacity="0.92">
+    <path d="M120 180c0-70 50-120 120-120s120 50 120 120c0 70-50 120-120 120S120 250 120 180z" />
+    <path d="M190 126c36-24 96-16 120 22M190 226c36 24 96 16 120-22M240 112v136M168 180h144" opacity="0.7" />
+  </g>
+  <g fill="#a7f6ff" opacity="0.9">
+    <circle cx="160" cy="120" r="7" />
+    <circle cx="624" cy="96" r="6" />
+    <circle cx="662" cy="416" r="8" />
+    <circle cx="116" cy="412" r="6" />
+  </g>
+  <text x="380" y="462" text-anchor="middle" fill="#d5edff" font-size="30" font-family="Arial, sans-serif">
+    Awareness Saves Time
+  </text>
+</svg>

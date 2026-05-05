@@ -29,7 +29,7 @@ export default function AboutPage() {
         <section className="glass rounded-2xl p-4 lg:col-span-2">
           <h2 className="text-lg font-semibold text-cyan-200">Important Limitations</h2>
           <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-300">
-            <li>Tumor staging is intentionally not predicted due to lack of medically validated stage labels.</li>
+            <li>Stage results are research-only and may use proxy rules when validated stage-labeled MRI models are unavailable.</li>
             <li>2D scans produce area-based progression estimates; this is not equivalent to true clinical volumetric analysis.</li>
             <li>Model outputs can be uncertain and must be clinically verified.</li>
             <li>This software is for educational/research use only, not direct clinical decision-making.</li>

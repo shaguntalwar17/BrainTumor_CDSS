@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero-panel awareness-hero">
+  <div class="row g-4 align-items-center">
+    <div class="col-lg-8">
+      <p class="hero-badge">Awareness and Prevention</p>
+      <h2 class="hero-title">Brain Tumor Awareness and Early Action</h2>
+      <p class="hero-subtitle">
+        Educational guidance on warning signs, risk awareness, and why timely neurological consultation matters.
+      </p>
+    </div>
+    <div class="col-lg-4">
+      <img class="awareness-illustration" src="{{ url_for('static', filename='images/brain-awareness.svg') }}" alt="Brain awareness illustration" />
+    </div>
+  </div>
+</section>
+
+<section class="row g-4 mt-1">
+  <div class="col-md-6 col-xl-3">
+    <article class="glass-card info-card h-100">
+      <h3>Early Warning Signs</h3>
+      <ul>
+        <li>Persistent headaches</li>
+        <li>New seizures</li>
+        <li>Vision or speech change</li>
+        <li>Unusual weakness or numbness</li>
+      </ul>
+    </article>
+  </div>
+  <div class="col-md-6 col-xl-3">
+    <article class="glass-card info-card h-100">
+      <h3>When to Seek Care</h3>
+      <ul>
+        <li>Symptoms worsening over days</li>
+        <li>Sudden neurological deficits</li>
+        <li>Confusion or behavior change</li>
+        <li>Recurrent unexplained vomiting</li>
+      </ul>
+    </article>
+  </div>
+  <div class="col-md-6 col-xl-3">
+    <article class="glass-card info-card h-100">
+      <h3>Risk Awareness</h3>
+      <ul>
+        <li>Family or genetic predisposition</li>
+        <li>Past cranial radiation exposure</li>
+        <li>Long-standing neurological complaints</li>
+        <li>Immunocompromised status</li>
+      </ul>
+    </article>
+  </div>
+  <div class="col-md-6 col-xl-3">
+    <article class="glass-card info-card h-100">
+      <h3>Healthy Habits</h3>
+      <ul>
+        <li>Regular checkups</li>
+        <li>Sleep and stress management</li>
+        <li>Physical activity and nutrition</li>
+        <li>Avoid delayed symptom reporting</li>
+      </ul>
+    </article>
+  </div>
+</section>
+
+<section class="glass-card mt-4">
+  <h3>Educational Note</h3>
+  <p>
+    This page provides general health awareness content only. It does not replace medical evaluation, imaging,
+    or specialist consultation.
+  </p>
+</section>
+{% endblock %}

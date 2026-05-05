@@ -19,7 +19,7 @@ def find_last_conv(module: torch.nn.Module):
     raise RuntimeError("No Conv2d layer found for Grad-CAM.")
 
 
-def generate_gradcam(checkpoint_path: str, image_path: str, output_path: str):
+def generate_gradcam(checkpoint_path: str, image_path: str, output_path: str, method: str = "hirescam"):
     ckpt = torch.load(checkpoint_path, map_location="cpu")
     model_name = ckpt["model_name"]
     classes = ckpt["classes"]
@@ -62,9 +62,17 @@ def generate_gradcam(checkpoint_path: str, image_path: str, output_path: str):
     acts = activations["value"][0]
     grads = gradients["value"][0]
 
-    weights = grads.mean(dim=(1, 2), keepdim=True)
-    cam = (weights * acts).sum(dim=0)
-    cam = torch.relu(cam)
+    method_key = method.lower().strip()
+    if method_key == "layercam":
+        cam = torch.relu(grads) * acts
+        cam = cam.sum(dim=0)
+    elif method_key == "gradcam":
+        weights = grads.mean(dim=(1, 2), keepdim=True)
+        cam = (weights * acts).sum(dim=0)
+        cam = torch.relu(cam)
+    else:
+        cam = torch.relu(grads * acts).sum(dim=0)
+
     cam = (cam - cam.min()) / (cam.max() - cam.min() + 1e-8)
     cam_np = cam.cpu().numpy()
 
@@ -80,7 +88,7 @@ def generate_gradcam(checkpoint_path: str, image_path: str, output_path: str):
     h1.remove()
     h2.remove()
 
-    print(f"Predicted class: {classes[pred_class]} | saved: {output_path}")
+    print(f"Predicted class: {classes[pred_class]} | method: {method_key} | saved: {output_path}")
 
 
 if __name__ == "__main__":
@@ -88,6 +96,7 @@ if __name__ == "__main__":
     parser.add_argument("--checkpoint", type=str, default="ml/artifacts/classification/best_classification.pt")
     parser.add_argument("--image", type=str, required=True)
     parser.add_argument("--output", type=str, default="sample_outputs/gradcam_result.png")
+    parser.add_argument("--method", type=str, default="hirescam", choices=["gradcam", "hirescam", "layercam"])
     args = parser.parse_args()
 
-    generate_gradcam(args.checkpoint, args.image, args.output)
+    generate_gradcam(args.checkpoint, args.image, args.output, args.method)

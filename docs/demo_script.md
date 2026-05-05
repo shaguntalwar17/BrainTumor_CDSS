@@ -36,6 +36,7 @@ Project made by Shagun Talwar
 ## 8. RAG Showcase
 - Ask a patient-history query.
 - Highlight grounded response and citations by scan date/id.
+- Mention that responses are generated only from stored patient records (no external diagnosis text).
 
 ## 9. Closing
 - Reiterate novelty:

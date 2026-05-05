@@ -7,7 +7,7 @@ export default function DisclaimerBanner() {
         All predictions, segmentations, heatmaps, and reports must be verified by a qualified radiologist or medical professional.
       </p>
       <p className="mt-2 text-amber-200">
-        Tumor stage prediction is not provided because the dataset does not include clinically validated staging labels.
+        Stage output is research-only. If a validated stage model is unavailable, the system shows transparent proxy stage estimation with limitations.
       </p>
     </div>
   );

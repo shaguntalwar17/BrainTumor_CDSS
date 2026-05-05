@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="glass-card">
+  <div class="section-head">
+    <h2>Report Download</h2>
+    <p>Access single-scan and patient-linked report files from generated records.</p>
+  </div>
+
+  <div class="row g-3 align-items-end">
+    <div class="col-lg-5">
+      <label class="form-label" for="reportPatientId">Filter by Patient ID</label>
+      <input id="reportPatientId" class="form-control form-control-lg" placeholder="Optional: PAT-2026-0001" />
+    </div>
+    <div class="col-lg-3 d-grid">
+      <button id="filterReportsBtn" class="btn btn-cyan btn-lg">Load Reports</button>
+    </div>
+  </div>
+
+  <div class="table-responsive mt-4">
+    <table class="table table-dark table-hover align-middle" id="reportsTable">
+      <thead>
+        <tr>
+          <th>Scan ID</th>
+          <th>Patient ID</th>
+          <th>Patient Name</th>
+          <th>Scan Date</th>
+          <th>Tumor Type</th>
+          <th>Stage</th>
+          <th>Risk</th>
+          <th>Download</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</section>
+
+<section class="mt-3" id="reportsMessage" hidden>
+  <div class="alert alert-info"></div>
+</section>
+{% endblock %}

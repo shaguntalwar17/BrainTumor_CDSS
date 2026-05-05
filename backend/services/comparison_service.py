@@ -3,11 +3,14 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
+import re
 
 import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import cv2
+import numpy as np
 
 from backend.models.entities import Scan
 from backend.utils.config import settings
@@ -28,6 +31,9 @@ class ComparisonOutput:
     percentage_change: float
     tumor_type_change: str
     confidence_difference: float
+    previous_stage_label: str | None
+    current_stage_label: str | None
+    stage_change: str
     previous_risk_level: str
     current_risk_level: str
     risk_level_change: str
@@ -36,18 +42,18 @@ class ComparisonOutput:
     summary: str
 
 
-def _progression_status(prev_metric: float, curr_metric: float, pct_change: float) -> str:
+def _progression_status(prev_metric: float, curr_metric: float, pct_change: float, prev_conf: float, curr_conf: float) -> str:
     if prev_metric > 0 and curr_metric == 0:
-        return "Tumor not detected in current scan"
+        return "Tumor no longer detected"
     if prev_metric == 0 and curr_metric > 0:
         return "New tumor detected"
     if -5.0 <= pct_change <= 5.0:
         return "Stable"
     if 5.0 < pct_change <= 20.0:
-        return "Slight increase"
+        return "Slightly increased"
     if pct_change > 20.0:
-        return "Significant increase"
-    return "Decreased"
+        return "Significantly increased"
+    return "Improved"
 
 
 def _risk_level_change(previous_risk: str, current_risk: str) -> str:
@@ -78,13 +84,25 @@ def compare_scans(previous: Scan, current: Scan) -> ComparisonOutput:
     else:
         percentage_change = 0.0
 
-    progression_status = _progression_status(prev_metric, curr_metric, percentage_change)
+    progression_status = _progression_status(
+        prev_metric=prev_metric,
+        curr_metric=curr_metric,
+        pct_change=percentage_change,
+        prev_conf=previous.confidence_score,
+        curr_conf=current.confidence_score,
+    )
     tumor_type_change = (
         "No change"
         if (previous.tumor_type or "Unknown") == (current.tumor_type or "Unknown")
         else f"{previous.tumor_type or 'Unknown'} -> {current.tumor_type or 'Unknown'}"
     )
     confidence_diff = float(current.confidence_score - previous.confidence_score)
+    previous_stage = previous.stage_label
+    current_stage = current.stage_label
+    if (previous_stage or "N/A") == (current_stage or "N/A"):
+        stage_change = "No change"
+    else:
+        stage_change = f"{previous_stage or 'N/A'} -> {current_stage or 'N/A'}"
     lti = _longitudinal_index(
         abs_change=absolute_change,
         pct_change=percentage_change,
@@ -119,6 +137,9 @@ def compare_scans(previous: Scan, current: Scan) -> ComparisonOutput:
         percentage_change=percentage_change,
         tumor_type_change=tumor_type_change,
         confidence_difference=confidence_diff,
+        previous_stage_label=previous_stage,
+        current_stage_label=current_stage,
+        stage_change=stage_change,
         previous_risk_level=previous.risk_category,
         current_risk_level=current.risk_category,
         risk_level_change=risk_change,
@@ -150,4 +171,67 @@ def build_growth_chart(patient_id: str, scans: list[Scan]) -> str | None:
     plt.savefig(out_path, dpi=160)
     plt.close()
 
+    return out_path.as_posix()
+
+
+def _safe_token(value: str) -> str:
+    token = re.sub(r"[^A-Za-z0-9_-]+", "_", value.strip())
+    return token or "patient"
+
+
+def build_growth_change_map(
+    patient_id: str,
+    previous_scan_id: int,
+    current_scan_id: int,
+    previous_mask_path: str | None,
+    current_mask_path: str | None,
+) -> str | None:
+    if not previous_mask_path or not current_mask_path:
+        return None
+
+    prev_path = Path(previous_mask_path)
+    curr_path = Path(current_mask_path)
+    if not prev_path.exists() or not curr_path.exists():
+        return None
+
+    prev = cv2.imread(str(prev_path), cv2.IMREAD_GRAYSCALE)
+    curr = cv2.imread(str(curr_path), cv2.IMREAD_GRAYSCALE)
+    if prev is None or curr is None:
+        return None
+
+    if prev.shape != curr.shape:
+        curr = cv2.resize(curr, (prev.shape[1], prev.shape[0]), interpolation=cv2.INTER_NEAREST)
+
+    prev_bin = prev > 0
+    curr_bin = curr > 0
+
+    stable = np.logical_and(prev_bin, curr_bin)
+    growth = np.logical_and(curr_bin, np.logical_not(prev_bin))
+    regression = np.logical_and(prev_bin, np.logical_not(curr_bin))
+
+    canvas = np.zeros((prev.shape[0], prev.shape[1], 3), dtype=np.uint8)
+    canvas[stable] = (0, 220, 220)      # Stable overlap: cyan
+    canvas[growth] = (20, 20, 240)      # New growth: red
+    canvas[regression] = (20, 140, 240)  # Reduced region: orange
+
+    legend_strip = np.zeros((42, canvas.shape[1], 3), dtype=np.uint8)
+    cv2.putText(legend_strip, "Growth map", (10, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (220, 220, 220), 1, cv2.LINE_AA)
+    cv2.putText(
+        legend_strip,
+        "Red=New/Increased | Cyan=Stable | Orange=Reduced",
+        (10, 32),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.35,
+        (220, 220, 220),
+        1,
+        cv2.LINE_AA,
+    )
+
+    output_img = np.concatenate([legend_strip, canvas], axis=0)
+    ensure_dir(settings.chart_dir)
+    out_path = (
+        Path(settings.chart_dir)
+        / f"patient_{_safe_token(patient_id)}_growth_map_{previous_scan_id}_to_{current_scan_id}.png"
+    )
+    cv2.imwrite(str(out_path), output_img)
     return out_path.as_posix()

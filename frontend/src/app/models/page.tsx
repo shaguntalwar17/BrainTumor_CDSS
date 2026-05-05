@@ -15,6 +15,16 @@ export default function ModelsPage() {
   const [metrics, setMetrics] = useState<ModelMetric[]>([]);
   const [note, setNote] = useState("");
 
+  const classificationRows = metrics.filter((m) => m.task_type === "classification");
+  const bestClassification = classificationRows
+    .filter((row) => row.f1_score !== null && row.auc !== null)
+    .map((row) => {
+      const speedScore = row.inference_time !== null && row.inference_time > 0 ? 1 / (1 + row.inference_time) : 0;
+      const score = (row.f1_score ?? 0) * 0.55 + (row.auc ?? 0) * 0.35 + speedScore * 0.1;
+      return { row, score };
+    })
+    .sort((a, b) => b.score - a.score)[0];
+
   useEffect(() => {
     api
       .get("/model-metrics")
@@ -30,6 +40,13 @@ export default function ModelsPage() {
 
   return (
     <PageShell title="Model Performance Leaderboard" subtitle="Compare classification and segmentation models using actual run metrics. Status shows real/demo baseline readiness.">
+      {bestClassification ? (
+        <div className="mb-3 rounded-2xl border border-cyan-300/35 bg-cyan-500/10 px-4 py-3 text-sm text-cyan-100">
+          Best current classification model (F1 + AUC + speed composite):{" "}
+          <span className="font-semibold">{bestClassification.row.model_name}</span>
+        </div>
+      ) : null}
+
       <div className="glass overflow-x-auto rounded-2xl p-4">
         <table className="min-w-full text-left text-sm">
           <thead>
@@ -37,6 +54,8 @@ export default function ModelsPage() {
               <th className="px-2 py-2">Model</th>
               <th className="px-2 py-2">Task</th>
               <th className="px-2 py-2">Accuracy</th>
+              <th className="px-2 py-2">Precision</th>
+              <th className="px-2 py-2">Recall</th>
               <th className="px-2 py-2">F1</th>
               <th className="px-2 py-2">AUC</th>
               <th className="px-2 py-2">Dice</th>
@@ -53,6 +72,8 @@ export default function ModelsPage() {
                 <td className="px-2 py-2 font-semibold">{m.model_name}</td>
                 <td className="px-2 py-2">{m.task_type}</td>
                 <td className="px-2 py-2">{fmt(m.accuracy)}</td>
+                <td className="px-2 py-2">{fmt(m.precision)}</td>
+                <td className="px-2 py-2">{fmt(m.recall)}</td>
                 <td className="px-2 py-2">{fmt(m.f1_score)}</td>
                 <td className="px-2 py-2">{fmt(m.auc)}</td>
                 <td className="px-2 py-2">{fmt(m.dice)}</td>

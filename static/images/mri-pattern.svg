@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="MRI placeholder pattern">
+  <defs>
+    <radialGradient id="scan" cx="50%" cy="50%" r="60%">
+      <stop offset="0%" stop-color="#cce8ff" stop-opacity="0.95" />
+      <stop offset="40%" stop-color="#8eb8df" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#173457" stop-opacity="0.95" />
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" rx="24" fill="#071325" />
+  <circle cx="256" cy="256" r="190" fill="url(#scan)" />
+  <circle cx="210" cy="238" r="58" fill="none" stroke="#edf7ff" stroke-opacity="0.5" stroke-width="8" />
+  <circle cx="308" cy="280" r="45" fill="none" stroke="#b8dcff" stroke-opacity="0.4" stroke-width="6" />
+  <path d="M90 256h332M256 90v332" stroke="#7db4e7" stroke-opacity="0.35" stroke-width="3" />
+  <text x="256" y="468" fill="#8db6da" font-size="30" text-anchor="middle" font-family="Arial, sans-serif">
+    MRI Preview
+  </text>
+</svg>

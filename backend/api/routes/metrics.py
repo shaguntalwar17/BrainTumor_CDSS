@@ -24,12 +24,23 @@ def get_model_metrics(db: Session = Depends(get_db)):
     if metrics_file.exists():
         sync_metrics_from_json(db, str(metrics_file))
 
-    for single_file in [
+    metric_files = [
         Path("ml/artifacts/classification/classification_metrics.json"),
         Path("ml/artifacts/classification/classification_metrics_evaluated.json"),
         Path("ml/artifacts/segmentation/segmentation_metrics.json"),
         Path("ml/artifacts/segmentation/segmentation_eval_metrics.json"),
-    ]:
+    ]
+    metric_files.extend(Path("ml/artifacts").glob("*/classification_metrics.json"))
+    metric_files.extend(Path("ml/artifacts").glob("*/classification_metrics_evaluated.json"))
+    metric_files.extend(Path("ml/artifacts").glob("*/segmentation_metrics.json"))
+    metric_files.extend(Path("ml/artifacts").glob("*/segmentation_eval_metrics.json"))
+
+    seen_paths: set[str] = set()
+    for single_file in metric_files:
+        key = str(single_file.resolve()) if single_file.exists() else str(single_file)
+        if key in seen_paths:
+            continue
+        seen_paths.add(key)
         if single_file.exists():
             try:
                 payload = json.loads(single_file.read_text(encoding="utf-8"))

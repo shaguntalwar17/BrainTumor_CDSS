@@ -1,0 +1,28 @@
+seed: 42
+data:
+  train_dir: data/processed/train
+  val_dir: data/processed/test
+  image_size: 224
+  batch_size: 12
+  num_workers: 2
+  class_names: [Glioma, Meningioma, Pituitary, No_Tumor]
+training:
+  model_name: resnet50
+  epochs_head: 2
+  epochs_finetune: 8
+  lr_head: 0.0003
+  lr_finetune: 0.00005
+  weight_decay: 0.0001
+  dropout: 0.25
+  label_smoothing: 0.0
+  early_stopping_patience: 4
+  use_amp: false
+  scheduler: cosine
+  use_weighted_sampler: true
+  sampler_power: 0.75
+  use_class_weighted_loss: false
+  loss: cross_entropy
+artifacts:
+  output_dir: ml/artifacts/classification_resnet50_balanced
+  best_model_name: best_classification_resnet50_balanced.pt
+  metrics_json: classification_metrics.json

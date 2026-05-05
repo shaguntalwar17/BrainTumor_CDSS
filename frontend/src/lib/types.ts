@@ -6,18 +6,30 @@ export type ClassProbability = {
 export type UploadScanResult = {
   patient_id: string;
   patient_name: string;
+  generated_patient_id: boolean;
+  matched_existing_patient: boolean;
+  patient_match_strategy: string | null;
+  patient_match_score: number | null;
   scan_id: number;
   scan_date: string;
   tumor_detected: boolean;
   tumor_type: string | null;
   confidence_score: number;
+  uncertainty_score: number | null;
+  uncertainty_std: number | null;
   tumor_area: number;
   tumor_volume: number | null;
+  stage_label: string | null;
+  stage_confidence: number | null;
+  stage_method: string | null;
+  volume_units: string | null;
+  is_area_based_approximation: boolean;
   risk_category: string;
   uncertainty_warning: string | null;
   progression_status: string;
   explainability_consistency_score: number | null;
   explainability_warning: string | null;
+  xai_method: string | null;
   longitudinal_tumor_progression_index: number | null;
   model_version: string;
   runtime_mode: string;
@@ -32,6 +44,9 @@ export type UploadScanResult = {
   gradcam_url: string | null;
   mask_url: string | null;
   overlay_url: string | null;
+  volume_manifest_url: string | null;
+  volume_slice_urls: string[];
+  selected_slice_index: number | null;
   disclaimer: string;
   stage_note: string;
   attribution: string;
@@ -49,27 +64,38 @@ export type ScanCore = {
   tumor_detected: boolean;
   tumor_type: string | null;
   confidence_score: number;
+  uncertainty_score: number | null;
+  uncertainty_std: number | null;
   tumor_area: number;
   tumor_volume: number | null;
+  stage_label: string | null;
+  stage_confidence: number | null;
+  stage_method: string | null;
   risk_category: string;
   explainability_consistency_score: number | null;
+  xai_method: string | null;
   model_version: string;
   radiologist_notes: string | null;
+  correction_notes: string | null;
   created_at: string;
 };
 
 export type ScanAssetBundle = {
   image_url: string | null;
   mask_url: string | null;
+  corrected_mask_url?: string | null;
   gradcam_url: string | null;
   overlay_url: string | null;
   report_url: string | null;
+  volume_manifest_url?: string | null;
 };
 
 export type PatientScanPayload = {
   scan: ScanCore;
   class_probabilities: ClassProbability[];
   assets: ScanAssetBundle;
+  volume_slice_urls?: string[];
+  selected_slice_index?: number | null;
 };
 
 export type PatientProfilePayload = {
@@ -100,6 +126,9 @@ export type CompareScansResponse = {
   percentage_change: number;
   tumor_type_change: string;
   confidence_difference: number;
+  previous_stage_label: string | null;
+  current_stage_label: string | null;
+  stage_change: string | null;
   previous_risk_level: string | null;
   current_risk_level: string | null;
   risk_level_change: string | null;
@@ -109,6 +138,21 @@ export type CompareScansResponse = {
   previous_scan_assets: ScanAssetBundle | null;
   current_scan_assets: ScanAssetBundle | null;
   progression_chart_url: string | null;
+  growth_map_url: string | null;
+};
+
+export type ReportListItem = {
+  scan_id: number;
+  patient_id: string | null;
+  patient_name: string | null;
+  scan_date: string;
+  tumor_detected: boolean;
+  tumor_type: string | null;
+  stage_label: string | null;
+  risk_category: string;
+  report_url: string;
+  report_storage_url: string | null;
+  created_at: string;
 };
 
 export type ModelMetric = {

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 640" role="img" aria-label="Brain wireframe illustration">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#08162b" />
+      <stop offset="100%" stop-color="#0f2e55" />
+    </linearGradient>
+    <linearGradient id="line" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#22d3ee" />
+      <stop offset="100%" stop-color="#6d73ff" />
+    </linearGradient>
+  </defs>
+  <rect width="960" height="640" rx="28" fill="url(#bg)" />
+  <g fill="none" stroke="url(#line)" stroke-width="3.2" opacity="0.9">
+    <ellipse cx="480" cy="320" rx="300" ry="190" />
+    <ellipse cx="480" cy="320" rx="258" ry="158" opacity="0.6" />
+    <path d="M240 320h480M480 130v380M295 215c86 72 290 72 376 0M295 425c86-72 290-72 376 0" />
+    <path d="M220 320c60-120 140-180 260-192M220 320c60 120 140 180 260 192" opacity="0.55" />
+    <path d="M740 320c-60-120-140-180-260-192M740 320c-60 120-140 180-260 192" opacity="0.55" />
+  </g>
+  <g fill="#9befff" opacity="0.78">
+    <circle cx="350" cy="265" r="6" />
+    <circle cx="610" cy="275" r="6" />
+    <circle cx="500" cy="365" r="6" />
+    <circle cx="430" cy="250" r="5" />
+    <circle cx="550" cy="390" r="5" />
+  </g>
+</svg>

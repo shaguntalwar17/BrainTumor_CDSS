@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero-panel">
+  <div class="row g-4 align-items-center">
+    <div class="col-xl-7">
+      <p class="hero-badge">Advanced Neuro-Oncology AI Platform</p>
+      <h2 class="hero-title">Explainable AI for Brain Tumor Detection, Segmentation, Classification, and Stage Analysis</h2>
+      <p class="hero-subtitle">
+        AI-assisted MRI analysis system for tumor detection, segmentation overlays, classification insights,
+        longitudinal trend tracking, and research-grade report generation.
+      </p>
+      <div class="hero-actions">
+        <a href="/upload" class="btn btn-cyan btn-lg">Upload MRI Image</a>
+        <a href="/comparison" class="btn btn-outline-light btn-lg">Compare Reports</a>
+      </div>
+    </div>
+    <div class="col-xl-5">
+      <div class="glass-card hero-visual">
+        <img src="{{ url_for('static', filename='images/brain-wireframe.svg') }}" alt="Brain themed medical visual" />
+        <div class="metric-stack">
+          <div class="metric-pill"><span>Detection</span><strong>Yes/No</strong></div>
+          <div class="metric-pill"><span>Segmentation</span><strong>Tumor Overlay</strong></div>
+          <div class="metric-pill"><span>Explainability</span><strong>Grad-CAM</strong></div>
+          <div class="metric-pill"><span>Follow-up</span><strong>Longitudinal Trend</strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="row g-4 mt-1">
+  <div class="col-lg-4">
+    <article class="glass-card info-card">
+      <h3>Frontal Lobe</h3>
+      <p>Executive function, behavior, and motor planning. Lesions may affect judgment and personality regulation.</p>
+    </article>
+  </div>
+  <div class="col-lg-4">
+    <article class="glass-card info-card">
+      <h3>Temporal Lobe</h3>
+      <p>Memory and language comprehension hub. Tumors may present with aphasia, seizures, or auditory disturbance.</p>
+    </article>
+  </div>
+  <div class="col-lg-4">
+    <article class="glass-card info-card">
+      <h3>Parietal and Occipital</h3>
+      <p>Sensory integration and visual pathways. Abnormalities may cause field cuts or spatial disorientation.</p>
+    </article>
+  </div>
+</section>
+
+<section class="row g-4 mt-1">
+  <div class="col-lg-6">
+    <article class="glass-card image-card">
+      <h3>Brain Anatomy Orientation</h3>
+      <p>Educational visual support for MRI interpretation and lesion localization context.</p>
+      <img src="https://commons.wikimedia.org/wiki/Special:FilePath/NIA%20human%20brain%20drawing.jpg" alt="Brain anatomy orientation" />
+    </article>
+  </div>
+  <div class="col-lg-6">
+    <article class="glass-card image-card">
+      <h3>MRI Structural Context</h3>
+      <p>Reference MRI illustration for grayscale tissue contrast awareness and boundary interpretation.</p>
+      <img src="https://commons.wikimedia.org/wiki/Special:FilePath/MRI_brain.jpg" alt="Brain MRI educational view" />
+    </article>
+  </div>
+</section>
+{% endblock %}

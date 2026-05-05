@@ -8,7 +8,7 @@ from backend.api.deps import get_db
 from backend.models.entities import Patient, Scan, ScanProbability
 from backend.schemas.patient import PatientRead
 from backend.schemas.scan import ScanRead
-from backend.utils.assets import to_storage_url
+from backend.utils.assets import to_storage_url, volume_manifest_to_urls
 
 
 router = APIRouter(tags=["patients"])
@@ -18,16 +18,21 @@ def _scan_payload(db: Session, scan: Scan) -> dict:
     probs = db.scalars(
         select(ScanProbability).where(ScanProbability.scan_id == scan.id).order_by(ScanProbability.probability.desc())
     ).all()
+    volume_slice_urls, selected_slice_index = volume_manifest_to_urls(scan.volume_manifest_path)
     return {
         "scan": ScanRead.model_validate(scan),
         "class_probabilities": [{"class_name": p.class_name, "probability": p.probability} for p in probs],
         "assets": {
             "image_url": to_storage_url(scan.image_path),
             "mask_url": to_storage_url(scan.mask_path),
+            "corrected_mask_url": to_storage_url(scan.corrected_mask_path),
             "gradcam_url": to_storage_url(scan.gradcam_path),
             "overlay_url": to_storage_url(scan.overlay_path),
             "report_url": f"/api/reports/{scan.id}" if scan.report_path else None,
+            "volume_manifest_url": to_storage_url(scan.volume_manifest_path),
         },
+        "volume_slice_urls": volume_slice_urls,
+        "selected_slice_index": selected_slice_index,
     }
 
 
@@ -61,4 +66,3 @@ def patient_scans(patient_id: str, db: Session = Depends(get_db)):
 
     scans = db.scalars(select(Scan).where(Scan.patient_db_id == patient.id).order_by(Scan.scan_date.asc())).all()
     return [_scan_payload(db, s) for s in scans]
-
