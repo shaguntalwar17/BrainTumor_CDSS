@@ -1,4 +1,4 @@
-﻿# Brain MRI Tumor AI Platform
+# Brain MRI Tumor AI Platform
 
 **Project made by Shagun Talwar**
 
@@ -28,6 +28,7 @@ Brain tumor analysis is often fragmented across tools. This project provides a s
 - Provide a premium web dashboard suitable for final-year/research demo and viva.
 
 ## 3. Features
+- System Design: Comprehensive OOAD documentation package (UML diagrams, architecture, workflows)
 - Detection: Tumor present/absent
 - Segmentation: Binary mask, overlay, boundary, area estimation
 - 3D-ready visualization: volumetric slice stack export with interactive slice-scrolling UI
@@ -365,6 +366,7 @@ Add screenshots here for final demo:
 - `docs/screenshots/models.png`
 
 ## 22. Documentation
+- `docs/ooad_documentation.md` (Complete UML & System Design Package)
 - `docs/architecture.md`
 - `docs/model_pipeline.md`
 - `docs/api_documentation.md`
