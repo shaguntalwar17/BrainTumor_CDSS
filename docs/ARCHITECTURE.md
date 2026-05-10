@@ -1,6 +1,6 @@
 # System Architecture
 
-Project made by Shagun Talwar
+Project made by Shagun Talwar and co-developed by Chirag Garg
 
 ## 1. High-Level Flow
 
