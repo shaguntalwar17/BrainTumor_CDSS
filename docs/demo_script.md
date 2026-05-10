@@ -1,6 +1,6 @@
 # Viva / Demo Script
 
-Project made by Shagun Talwar
+Project made by Shagun Talwar and co-developed by Chirag Garg
 
 ## 1. Opening (30-45 sec)
 - Introduce system as an AI-assisted research prototype for brain MRI analysis.
