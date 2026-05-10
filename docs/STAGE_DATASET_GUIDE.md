@@ -1,6 +1,6 @@
 # Stage Dataset Guide (Research)
 
-Project made by Shagun Talwar
+Project made by Shagun Talwar and co-developed by Chirag Garg
 
 ## Goal
 Enable research-stage estimation for glioma burden by training a stage/grade model on MRI slices.
