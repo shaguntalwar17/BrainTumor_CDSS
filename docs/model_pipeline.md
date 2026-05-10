@@ -1,6 +1,6 @@
 # Model Pipeline
 
-Project made by Shagun Talwar
+Project made by Shagun Talwar and co-developed by Chirag Garg
 
 ## 1. Preprocessing
 - File format support: JPG/PNG, optional NIfTI/DICOM.
